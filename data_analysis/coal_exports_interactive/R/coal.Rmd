@@ -1,0 +1,408 @@
+---
+title: "US coal exports"
+author: "Devin Bunch"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+output:
+  html_document:
+    theme: yeti
+    highlight: haddock
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    keep_md: yes
+  pdf_document: 
+    toc: yes
+    toc_depth: '3'
+---
+
+```{r setup, include=FALSE}
+## These next lines set the default behaviour for all R chunks in the .Rmd document.
+## I recomend you take a look here: https://rmarkdown.rstudio.com/authoring_rcodechunks.html
+knitr::opts_chunk$set(
+  echo = TRUE, ## Show all R output
+  cache = TRUE, ## Cache the results to increase performance.
+  message = FALSE ## Suppress messages (e.g. about namespace conflicts)
+  ) 
+knitr::opts_chunk$set(cache=TRUE) 
+```
+
+## Preliminaries: 
+
+### Load libraries
+
+It's a good idea to load our libraries at the top of the Rmd document so that everyone can see what we're using. Similarly, it's good practice to set `cache=FALSE` to ensure that the libraries are dynamically loaded each time you knit the document.
+
+*I've only added the libraries needed to download and read the data. We'll need to load additional libraries to complete this assignment. Add them here once we discover that we need them.* 
+
+```{r libs, cache=FALSE}
+## Install the pacman package if necessary
+if (!require("pacman")) install.packages("pacman")
+## Install other packages using pacman::p_load()
+pacman::p_load(httr, readxl, here,tinytex,tidyverse,data.table,rlang,
+               ggplot2, janitor, tidyfast, dtplyr, microbenchmark, skimr, lubridate, ggiraph,naniar,dtplyr, ggthemes, hrbrthemes)
+pacman::p_load(tidyverse, data.table, janitor, hrbrthemes, countrycode, plotly)
+theme_set(hrbrthemes::theme_ipsum()) ## ggplot2 theme I like
+```
+
+### Read in the data
+
+Use `httr::GET()` to fetch the EIA excel file for us from web.
+
+```{r get}
+# library(here) ## Already loaded
+# library(httr) ## Already loaded
+url = "https://www.eia.gov/coal/archive/coal_historical_exports.xlsx"
+## Only download the file if we need to
+if(!file.exists(here::here("data/coal.xlsx"))) {
+  GET(url, write_disk(here::here("data/coal.xlsx")))
+}
+```
+
+Next, we read in the file.
+
+```{r read}
+coal = read_excel(here::here("data/coal.xlsx"), skip = 3, na = ".")
+```
+
+We are now ready to go.
+
+## 1) Clean the column names
+
+The column (i.e. variable) names aren't great: Spacing, uppercase letters, etc. 
+```{r names, dependson=coal}
+#now let's make our data fram into a data table
+coal_dt = as.data.table(coal)
+
+#clean the variable names in our data set
+#names(coal) #check to make sure they're uniform
+coal = 
+  coal %>% 
+  clean_names() %>%
+  rename(yr = year, qtr = quarter, dest = coal_destination_country)
+coal
+```
+
+## 2) Total US coal exports over time (year only)
+
+Plot the US's total coal exports over time by year ONLY. What secular trends do you notice in the data?
+
+```{r, fig.width=10}
+# names(coal_dt) = gsub(x = tolower(names(coal_dt)), " ", "_")
+coal_dt = clean_names(coal_dt)
+setnames(coal_dt, 
+         old = c("year", "quarter", "coal_destination_country"),
+         new = c("yr", "qtr", "dest"))
+coal_dt
+```
+
+*Hints: If you want nicely formatted y-axis label, add `+ scale_y_continuous(labels = scales::comma)` to your `ggplot2` code.*
+
+**The trends in the data can be deciphered through the graph above. We see there is a steady increase of coal exports between the beginning years 2002 and 2006. In year 2006 and beyond, we start to see sections of a dramatic, positive increase followed by a dramatic decrease. It is oscillating in a linear  manner and getting more dramatic in magnitude as time goes on. Thus, coal is being exported immediately after it is harvested, in a quick fashion--and then the exports slow down as resources run out, and need time to replenish. It is also seen to slow down because once nations buy coal, they need time to use it up before they need to repurchase more coal, for more use... and so on. These secular trends can be defined over years 2006-2009, 2009-2018, and from 2018-2020. The magnitude of change in coal exports in these periods seem to get multiply the increasing and decreasing amounts of coal exports as time goes on. It is seen to have been given a small start though, with not too many exports. The secular trends seem to start around year 2007 and have gone on to increase overall coal exports. The level of exports doesn't seems to drop below the quantity of 50,000,000 a year though. Since 2006, there hadn't been less than 50,000,000 coal exports a year.**
+
+```{r}
+# set plotting theme
+#now we want to plot total exports by year using data.table and ggplot2
+coal_dt[, .(total = sum(total, na.rm=TRUE)), by = yr] %>%
+  ggplot(aes(x=yr, y=total)) +
+  geom_area(alpha=0.5, fill = "dodgerblue") +
+  geom_line(alpha = 0.5, color = "black") +
+  scale_y_continuous(labels = scales::comma) + 
+  labs(title= "Total Coal Exports in The United States From Years 2002 to 2020", x = "Year", y = "Total Coal     Exports") + 
+  scale_x_continuous(labels = seq(2002, 2020, 1), breaks = seq(2002, 2020, 1)) + # display every year's value
+  theme(axis.text.x = element_text(angle=90,size=7))
+```
+
+## 3) Total US coal exports over time (year AND quarter)
+
+Now do the same as the above, expect aggregated quarter of year (2001Q1, 2002Q2, etc.). Do you notice any seasonality that was masked from the yearly averages?
+
+```{r}
+#aggregate by quarter every year now
+coal_dt[, yr_qtr := as.IDate(paste(yr , qtr*3-2, '01', sep = '-'))]
+#ggplot2 is going to want to convert your quarterly data into actual date format before it plots nicely. (i.e. Don't leave it as a string.
+
+coal_dt
+#plot it 
+coal_dt[, .(total = sum(total, na.rm=TRUE)), by = yr_qtr] %>%
+  ggplot(aes(x=yr_qtr, y=total)) +
+  geom_area(alpha=0.5, fill = "dodgerblue") + 
+  geom_line(alpha = 1, color = "black") +
+  scale_y_continuous(labels = scales::comma)  +
+  labs(title= "Total Coal Exports in The United States by Quarter From Years 2002 to 2020", x = "Quarter Year", y = "Total Coal     Exports") 
+```
+
+**There was definitely seasonality that was masked from the yearly averages. We can see this because there exists more variation and more cycles within the given time  period. This is likely due to the fact that the yearly totals were summations of the quarters, which cuts out the ability to see more than one trend in a given year. From  our more detailed data display, we can see more secular trends, and more variation among the annual exports. Looking at the shape pattern, we see the triangles that signify a second quarter of a year, are mostly the  times when  exports  reach their highest each year: the second quarter receives the most coal exports in the given year. We also see the oscillation periods getting wider, signifying an export activity level that increases as time goes on.**
+
+## 4) Exports by destination country
+
+### 4.1) Create a new data frame
+
+Create a new data frame called `coal_country` that aggregates total exports by destination country (and quarter of year). Make sure you print the resulting data frame so that it appears in the knitted R markdown document.
+
+```{r}
+#new data frame with total exports by country
+# coal %>% distinct(type)
+#data table way
+coal_country_dt = coal_dt[, 
+                          .(total = sum(total, na.rm=TRUE)), 
+                          by = .(dest, yr_qtr)]
+
+setorder(coal_country_dt, dest, yr_qtr)
+
+coal_country_dt
+```
+
+### 4.2) Inspect the data frame
+
+It looks like some countries are missing data for a number of years and periods (e.g. Albania). Confirm that this is the case. What do you think is happening here?
+```{r}
+#we can compare rows and column with the original data.table set (not the copy) to see which variable inputs are missing
+
+#first let us look at 
+#names(coal_country$coal_destination_country)
+
+#ungroup and then count how many each country destination has
+coal_country_dt[, .N, by = dest]
+```
+**Certain country's are getting omitted from our data.table because we need complete data on BOTH yearly quarter AND destination country in order to group by both objects. We removed NA values in our data sets when calculating sum totals. Since each country destination has multiple coal exports in a given quarter, we will have repeat amounts for our variable "summed_total" when looking at rows of JUST one destination country and one summed_total. Printing this out we can see this is the case due to the fact that all of the countries do not uniformly share the same amount of data entries.**
+
+### 4.3) Complete the data frame
+
+Fill in the implicit missing values, so that each country has a representative row for every year-quarter time period. In other words, you should modify the data frame so that every destination country has row entries for all possible year-quarter combinations (from 2002Q1 through the most recent quarter). Order your updated data frame by country, year and, quarter. 
+
+```{r}
+# Create a temporary data table with all possible combinations of countries and year-quarters
+temp = CJ(dest = unique(coal_country_dt$dest), yr_qtr = unique(coal_country_dt$yr_qtr))
+
+# Full join our temporary data table and our original caol_country_dt data table
+coal_country_dt = merge(coal_country_dt, 
+                        temp, 
+                        all = TRUE, 
+                        by = c('dest', 'yr_qtr'))
+
+rm(temp) # remove our temporary data table from our working environment
+
+#print out our new merged data table containing all the quarterly years from 2002 to 2020 with the existing data filled in!
+coal_country_dt
+```
+
+### 4.4) Some more tidying up
+
+In answering the previous question, you _may_ encounter a situation where the data frame contains a quarter --- probably `r gsub("\\.", "q", lubridate::quarter(Sys.Date()-months(3), with_year = TRUE))` --- that is missing total export numbers for *all* countries. Did this happen to you? Filter out the completely missing quarter if so. Also: Why do you think this might have happened? (Please answer the latter question even if it didn't happen to you.) 
+
+```{r}
+#as dplyr's data frame,  recall our data frame object
+
+
+#we need to check if wee have any missing data in any quarters 
+all_missing =
+  coal %>%
+  ## First count how many obs there per year-quarter combo
+  add_count(yr, qtr) %>%
+  ## Now we look at only the NA values
+  filter(is.na(total)) %>%
+  group_by(yr, qtr) %>%
+  mutate(missing_n = n()) %>%
+  ## See if we have any matches
+  filter(n == missing_n) %>%
+  distinct(yr, qtr)
+
+#print out the missing ones
+all_missing ## there are none
+```
+
+**When using dplyr's data.frame's versus DataTable's data.table, you have to switch the formats of your data sets in order to use their corresponding package in R-studio. When data.table is used in conjunction with multiple steps, and multiple variable manipulation, it is imperative we create copies of our data in order to keep the original data set as it was imported. Otherwise, deletions,mutations, and other changes will permanently alter the observation values. However, I did not run into this issue and I have zero missing rows a.k.a. missing quarters.**
+
+### 4.5) Culmulative top 10 US coal export destinations
+
+Produce a vector --- call it `coal10_culm` --- of the top 10 top coal destinations over the full `r min(coal[, which(grepl('Year|year', names(coal)))], na.rm=T)`--`r `max(coal[, which(grepl('Year|year', names(coal)))], na.rm=T)` study period. What are they?
+```{r}
+#make our vector
+coal10_culm = coal_country_dt[, sum(total, na.rm=TRUE), by = dest][order(-V1), dest[1:10]]
+#print out vector
+coal10_culm
+```
+### 4.6) Recent top 10 US coal export destinations
+
+Now do the same, except for most recent period on record (i.e. final quarter in the dataset). Call this vector `coal10_recent` and make sure to print it so that I can see it too. Are there any interesting differences between the two vectors? Apart from any secular trends, what else might explain these differences?
+
+```{r}
+#make our vector
+coal10_recent =
+  coal_country_dt[yr_qtr==max(yr_qtr), sum(total, na.rm=TRUE), by = dest
+                  ][order(-V1), dest[1:10]]
+#print out the vector
+coal10_recent
+```
+
+**From our two vectors produced, we can see that they are the exact same vectors, with different arrangement of country destination names. Although they share the same top exports, we can gather that Canada is the Number 1 in most coal imports(since they're receiving US' coal exports). However, we also see India is #1 according to the second vector. If they are typical, and regular trading partners, then we would expect to see the same trends in top export destinations. Which we did overall.**
+
+### 4.7) US coal exports over time by country {.tabset .tabset-fade .tabset-pills}
+
+Plot the quarterly coal exports over time, but now disaggregated by country. In particular, highlight the top 10 (cumulative) export destinations and then sum the remaining countries into a combined "Other" category. (In other words, your figure should contain the time series of eleven different countries/categories.)
+
+```{r}
+#work with the datatable
+`%nchin%` = Negate(`%chin%`)
+coal_country_dt[dest %nchin% coal10_culm, dest := 'Other']
+coal_country_dt = 
+  coal_country_dt[, .(total = sum(total, na.rm=TRUE)), by = .(dest, yr_qtr)]
+
+#coal_country_dt
+```
+
+```{r, fig.width = 7}
+library(directlabels)
+#now plot it 
+p = coal_country %>%
+  ggplot(aes(x=yr_qtr, y=total, fill= country, col = country)) + 
+  scale_y_continuous(labels = scales::comma) +
+  geom_area() +
+  labs(x = "Quarterly Year", y = "Total Coal Exports", title = "Total US Coal Exports in the Top 10 Countries from 2002 to 2020") + 
+  theme(legend.title = element_text(color = "Black", face = "bold")) +
+#  scale_x_date() + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+p
+```
+
+```{r, fig.width=7, fig.height=2.5}
+#now make another version of the same graph
+p = coal_country %>%
+  ggplot(aes(x=yr_qtr, y=total, fill= country, col = country)) + 
+  scale_y_continuous(labels = scales::comma) + 
+  labs(x = "Quarterly Year", y = "Total Coal Exports", title = "Total US Coal Exports in the Top 10 Countries from 2002 to 2020") 
+
+
+#get rid of the legend
+p + theme(legend.position = "none") +
+  geom_line(size = 0.29) + 
+    # Add, from the directlabels package, 
+  # geom_dl, using method = 'last.bumpup' to put the 
+  # labels at the end, and make sure that if they intersect, 
+  # one is bumped up
+  geom_dl(aes(label = country), method = 'last.bumpup')  +
+  theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+### 4.8) Make it pretty
+
+Take your previous plot and add some swag to it. That is, try to make it as visually appealing as possible without overloading it with chart junk.
+
+*Hint: You've got loads of options here. If you haven't already done so, consider a more bespoke theme with the `ggthemes`, `hrbrthemes`, or `cowplot` packages. Try out `scale_fill_brewer()` and `scale_colour_brewer()` for a range of interesting colour palettes. Try some transparency effects with `alpha`. Give your axis labels more refined names with the `labs()` layer in ggplot2. While you're at it, you might want to scale (i.e. normalise) your y-variable to get rid of all those zeros. You can shorten any country names to their ISO abbreviation; see `?countrycode::countrycode`. More substantively --- but more complicated --- you might want to re-order your legend (and the plot itself) according to the relative importance of the destination countries. See `?forcats::fct_reorder` or forcats::fct_relevel`.*
+```{r}
+# library(countrycode) ## Already loaded
+
+coal_country_dt[, iso := fifelse(dest!='Other',
+                              countrycode(dest, 'country.name', 'iso3c'), 
+                              'Other')]
+```
+
+
+
+```{r}
+#spaghetti plot, faceted 
+coal_country =
+  coal_country %>%
+   ## Use ISO abbreviations
+  mutate(iso = ifelse(country!="Other", 
+                          countrycode(country, 'country.name', 'iso3c'), 
+                          "Other"))
+## Create a copy of our faceting variable (here: iso)
+coal_country$iso_copy = coal_country$iso
+
+coal_country %>%
+  ggplot(aes(x=yr_qtr, y=total)) +
+  ## Extra geom_line() call. Note that i) we must remove the actual faceting 
+  ## variable to ensure all the lines get printed in each facet, and ii) the
+  ## copied facet variable is used in the group aesthetic.
+  geom_line(
+      data = . %>% select(-iso),
+      aes(group=iso_copy), alpha=0.5, lwd=0.1
+      ) +
+  ## Main geom_line() call. We'll use a different colour/width for emphasis.
+  geom_line(col = "#377EB8", lwd=0.8) +
+  facet_wrap(~iso) +
+  ## Since we're just emphasizing trends, I'll use a very plain plot theme
+  theme_void()
+
+```
+
+```{r}
+# the area map
+# library(forcats)    ## Already loaded
+# library(hrbrthemes) ## Already loaded
+
+p2 =
+  coal_country_dt %>%
+  ggplot(
+    aes(
+      x=yr_qtr, y=total, 
+      fill = forcats::fct_reorder2(iso, yr_qtr, total, .desc = FALSE), 
+      col = forcats::fct_reorder2(iso, yr_qtr, total, .desc = FALSE)
+      )) + 
+  geom_area(alpha = 0.7) + ## Add some transparency
+  geom_line(position="stack", lwd = 0.2) +
+  scale_fill_brewer(palette="Spectral", name="Destination") + ## "Rainbow" palette (see note above)
+  scale_colour_brewer(palette="Spectral", name="Destination") + ## See above.
+  labs(y = "Short tons (millions)", title = "US coal exports") +
+  theme(axis.title.x = element_blank()) ## Do we really to tell people that our x-axis is "Date"?
+p2
+```
+
+
+### 4.9) Make it interactive
+
+Create an interactive version of your previous figure.
+
+```{r}
+#load extra, new package needed
+p_load(gganimate, gifski)
+
+#From our variable assignments, we can add our animations
+
+```
+
+*Hint: Take a look at plotly::ggplotly(), or the gganimate package.*
+
+## 5) Show me something interesting
+
+There's a lot still to explore with this data set. Your final task is to
+show me something interesting. Drill down into the data and explain
+what's driving the secular trends that we have observed above. Or
+highlight interesting seasonality within a particular country. Or go
+back to the original `coal` data frame and look at exports by customs
+district, or by coal type. Do we changes or trends there? Etcetera.
+Etcetera. My only requirement is that you show your work and tell me
+what you have found.
+
+```{r}
+#ok,let's load our original, unclean data
+coal_fun <- copy(coal)
+
+#we have various columns of variables and rows of coresponding
+#observations we have not looked at. Let's do that now
+
+#start by looking at variable names
+names(coal_fun)
+
+```
+**Starting by looking at the variable names, we wanted to see if
+anything other than "total," "exports," or "revenue." These three
+variables are what we have worked with for each problem above, and what
+seem obvious factors into secular trends that we see in our displayed
+figures. We found the variables surrounding "metallurgy" concerning the
+branch of science and technology concerned with the properties of metals
+and their production and purification. Upon further research into how
+this affects total coal exports, we found the reason for both
+metallurgical variables *and* for our supposedly random "coke"
+variables. Here is what we found:**
+> **Metallurgical coal or coking coal is a grade of coal that can be used
+> to produce good-quality coke. Coke is an essential fuel and reactant in
+> the blast furnace process for primary steel making. The demand for
+> metallurgical coal is highly coupled to the demand for steel.**
+
+**This tells us the two variables are correlated, and thus, we shall
+dive deeper into these factors (coke, metallurgical) influencing coal
+export levels, following below**
+
