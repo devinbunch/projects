@@ -111,7 +111,7 @@ object_df = object_df2 %>% pivot_longer(!treatment)
 object_df 
 ```
 
-preservece9c1a3f8badcdc7
+preserve6c1cdd28e6af54c1
 
 **Interpreting the table:** the data represent the mean of the given variable, grouped by treatment.
 
@@ -326,57 +326,32 @@ chl <- lm(data=ohp_data,chl_inp~treatment)
 
 ```r
 #let's report them in a table
-stargazer(dia, doc, hdp, meds, chl, title = "Overall Regression Results for Outcome Variables", align = TRUE, type = 'latex', robust = TRUE, font.size = "small",
+stargazer(dia, doc, hdp, meds, chl, title = "Overall Regression Results for Outcome Variables", align = TRUE, type = 'html', robust = TRUE, font.size = "small",
           omit.stat = c("f", "ser"),
           column.sep.width = "6pt")
 ```
 
 
-% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: Wed, Sep 29, 2021 - 17:34:40
-% Requires LaTeX packages: dcolumn 
-\begin{table}[!htbp] \centering 
-  \caption{Overall Regression Results for Outcome Variables} 
-  \label{} 
-\small 
-\begin{tabular}{@{\extracolsep{6pt}}lD{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3} } 
-\\[-1.8ex]\hline 
-\hline \\[-1.8ex] 
- & \multicolumn{5}{c}{\textit{Dependent variable:}} \\ 
-\cline{2-6} 
-\\[-1.8ex] & \multicolumn{1}{c}{dia\_dx\_post\_lottery} & \multicolumn{1}{c}{doc\_num\_mod\_inp} & \multicolumn{1}{c}{hbp\_dx\_post\_lottery} & \multicolumn{1}{c}{rx\_num\_mod\_inp} & \multicolumn{1}{c}{chl\_inp} \\ 
-\\[-1.8ex] & \multicolumn{1}{c}{(1)} & \multicolumn{1}{c}{(2)} & \multicolumn{1}{c}{(3)} & \multicolumn{1}{c}{(4)} & \multicolumn{1}{c}{(5)}\\ 
-\hline \\[-1.8ex] 
- treatment & 0.009^{***} & 0.396^{*} & 0.002 & 0.128^{**} & -0.642 \\ 
-  & (0.002) & (0.216) & (0.004) & (0.053) & (0.613) \\ 
-  & & & & & \\ 
- Constant & 0.012^{***} & 5.746^{***} & 0.057^{***} & 1.838^{***} & 205.769^{***} \\ 
-  & (0.002) & (0.156) & (0.003) & (0.038) & (0.443) \\ 
-  & & & & & \\ 
-\hline \\[-1.8ex] 
-Observations & \multicolumn{1}{c}{12,186} & \multicolumn{1}{c}{12,158} & \multicolumn{1}{c}{11,945} & \multicolumn{1}{c}{11,912} & \multicolumn{1}{c}{12,174} \\ 
-R$^{2}$ & \multicolumn{1}{c}{0.001} & \multicolumn{1}{c}{0.0003} & \multicolumn{1}{c}{0.00003} & \multicolumn{1}{c}{0.0005} & \multicolumn{1}{c}{0.0001} \\ 
-Adjusted R$^{2}$ & \multicolumn{1}{c}{0.001} & \multicolumn{1}{c}{0.0002} & \multicolumn{1}{c}{-0.0001} & \multicolumn{1}{c}{0.0004} & \multicolumn{1}{c}{0.00001} \\ 
-\hline 
-\hline \\[-1.8ex] 
-\textit{Note:}  & \multicolumn{5}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
-\end{tabular} 
-\end{table} 
+<table style="text-align:center"><caption><strong>Overall Regression Results for Outcome Variables</strong></caption>
+<tr><td colspan="6" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td colspan="5"><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="5" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>dia_dx_post_lottery</td><td>doc_num_mod_inp</td><td>hbp_dx_post_lottery</td><td>rx_num_mod_inp</td><td>chl_inp</td></tr>
+<tr><td style="text-align:left"></td><td>(1)</td><td>(2)</td><td>(3)</td><td>(4)</td><td>(5)</td></tr>
+<tr><td colspan="6" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">treatment</td><td>0.009<sup>***</sup></td><td>0.396<sup>*</sup></td><td>0.002</td><td>0.128<sup>**</sup></td><td>-0.642</td></tr>
+<tr><td style="text-align:left"></td><td>(0.002)</td><td>(0.216)</td><td>(0.004)</td><td>(0.053)</td><td>(0.613)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td style="text-align:left">Constant</td><td>0.012<sup>***</sup></td><td>5.746<sup>***</sup></td><td>0.057<sup>***</sup></td><td>1.838<sup>***</sup></td><td>205.769<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.002)</td><td>(0.156)</td><td>(0.003)</td><td>(0.038)</td><td>(0.443)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td colspan="6" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>12,186</td><td>12,158</td><td>11,945</td><td>11,912</td><td>12,174</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.001</td><td>0.0003</td><td>0.00003</td><td>0.0005</td><td>0.0001</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.001</td><td>0.0002</td><td>-0.0001</td><td>0.0004</td><td>0.00001</td></tr>
+<tr><td colspan="6" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td colspan="5" style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
 
-% Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: Wed, Sep 29, 2021 - 17:34:40
-% Requires LaTeX packages: dcolumn 
-\begin{table}[!htbp] \centering 
-  \caption{Overall Regression Results for Outcome Variables} 
-  \label{} 
-\small 
-\begin{tabular}{@{\extracolsep{6pt}} D{.}{.}{-3} } 
-\\[-1.8ex]\hline 
-\hline \\[-1.8ex] 
-\multicolumn{1}{c}{TRUE} \\ 
-\hline \\[-1.8ex] 
-\end{tabular} 
-\end{table} 
+<table style="text-align:center"><caption><strong>Overall Regression Results for Outcome Variables</strong></caption>
+<tr><td colspan="1" style="border-bottom: 1px solid black"></td></tr><tr><td>TRUE</td></tr>
+<tr><td colspan="1" style="border-bottom: 1px solid black"></td></tr></table>
 The ITT effect is equal to the treatment's impact on each of the variables we chose. For the "medications a person has" variable, the ITT effect is seen in the table as 0.128, significant at the 95% level. For the number of doctor's visits, we have an ITT effect of 0.396 with a lesser significance level. Horizontally alongside "treatment" we can see our variable's corresponding ITT effects.The ITT is the coefficient is the difference in mean of the variable between the control and the treatment. The intercept is the mean of the control, and the treatment coefficient is the ITT estimate. you get one ITT estimate per variable of interest regressed on treatment. 
 
 > What is the “treatment on the treated” effect (ATET) of the OHP experiment, i.e. the effect among those who applied for Medicaid? We will estimate it for every health outcome we chose previously and provide some intuition for the calculation of this estimate.
@@ -400,30 +375,46 @@ Outcome = Outcome %>% mutate(ATET = ATET/.2536)%>% mutate(Outcome = Outcome)
 Outcome = Outcome %>% select(ATET, Outcome)
 
 #Output table
-kable(Outcome, format = "latex", booktabs = TRUE,
+kable(Outcome, format = "html", booktabs = TRUE,
         caption = "ATET",
         format.args = list(big.mark= ","))
 ```
 
-\begin{table}
+<table>
+<caption>ATET</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> ATET </th>
+   <th style="text-align:left;"> Outcome </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> 0.035488959 </td>
+   <td style="text-align:left;"> Diabetes Post </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 1.561514196 </td>
+   <td style="text-align:left;"> Medical Visits </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 0.007886435 </td>
+   <td style="text-align:left;"> Hypertension Post </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> 0.504731861 </td>
+   <td style="text-align:left;"> Medication </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> -2.531545741 </td>
+   <td style="text-align:left;"> Cholesterol </td>
+  </tr>
+</tbody>
+</table>
 
-\caption{\label{tab:unnamed-chunk-11}ATET}
-\centering
-\begin{tabular}[t]{ll}
-\toprule
-ATET & Outcome\\
-\midrule
-0.035488959 & Diabetes Post\\
-1.561514196 & Medical Visits\\
-0.007886435 & Hypertension Post\\
-0.504731861 & Medication\\
--2.531545741 & Cholesterol\\
-\bottomrule
-\end{tabular}
-\end{table}
 
-**Reporting on the ATET's:** The effect for the people who wanted it do not see significant change in their own health outcomes, but we see significant change in "useage" variables related to medicaid. From the table, we can see the treatment's coefficients are equal to the ATET of that column's variable. We see this trend in a surge of medicaid usage, because the use of medication decreases significantly alongside a decrease in the actual usage among the people who got medicaid anyways. The other people who didn't have access to medicaid, and wanted it, were seen to use it more. There was a greater change in medicaid coverage services.
+>**Reporting on the ATET's:** The effect for the people who wanted it do not see significant change in their own health outcomes, but we see significant change in "useage" variables related to medicaid. From the table, we can see the treatment's coefficients are equal to the ATET of that column's variable. We see this trend in a surge of medicaid usage, because the use of medication decreases significantly alongside a decrease in the actual usage among the people who got medicaid anyways. The other people who didn't have access to medicaid, and wanted it, were seen to use it more. There was a greater change in medicaid coverage services.
 
-> Do we have to worry about attrition bias in analyzing this data? Explain why or why not.
+Do we have to worry about attrition bias in analyzing this data? Explain why or why not.
 
 There's only two years of data since the medicaid coverage expanded afterwards to include everyone and that got rid of the control group. Everyone is now offered medicaid coverage due to the crazy demand. 10th of March 2008 to September 30 2009. In the lectures by Amy Finkelstein, she addresses the controversy surrounding medicaid's expansion and the necessities for Randomized Experiment Designs to be implemented into policy making. We should always worry about a little bit of attrition bias just because of unforeseeable attributes like survey fatigue, when people get treatment, leave and don't come back to complete it, since it is such a short time period causes the attrition rate to be lower but it is still there.

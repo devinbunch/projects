@@ -178,7 +178,7 @@ chl <- lm(data=ohp_data,chl_inp~treatment)
 
 ```{r, results = 'asis', message = FALSE}
 #let's report them in a table
-stargazer(dia, doc, hdp, meds, chl, title = "Overall Regression Results for Outcome Variables", align = TRUE, type = 'latex', robust = TRUE, font.size = "small",
+stargazer(dia, doc, hdp, meds, chl, title = "Overall Regression Results for Outcome Variables", align = TRUE, type = 'html', robust = TRUE, font.size = "small",
           omit.stat = c("f", "ser"),
           column.sep.width = "6pt")
 ```
@@ -204,13 +204,14 @@ Outcome = Outcome %>% mutate(ATET = ATET/.2536)%>% mutate(Outcome = Outcome)
 Outcome = Outcome %>% select(ATET, Outcome)
 
 #Output table
-kable(Outcome, format = "latex", booktabs = TRUE,
+kable(Outcome, format = "html", booktabs = TRUE,
         caption = "ATET",
         format.args = list(big.mark= ","))
 ```
 
-**Reporting on the ATET's:** The effect for the people who wanted it do not see significant change in their own health outcomes, but we see significant change in "useage" variables related to medicaid. From the table, we can see the treatment's coefficients are equal to the ATET of that column's variable. We see this trend in a surge of medicaid usage, because the use of medication decreases significantly alongside a decrease in the actual usage among the people who got medicaid anyways. The other people who didn't have access to medicaid, and wanted it, were seen to use it more. There was a greater change in medicaid coverage services.
 
-> Do we have to worry about attrition bias in analyzing this data? Explain why or why not.
+>**Reporting on the ATET's:** The effect for the people who wanted it do not see significant change in their own health outcomes, but we see significant change in "useage" variables related to medicaid. From the table, we can see the treatment's coefficients are equal to the ATET of that column's variable. We see this trend in a surge of medicaid usage, because the use of medication decreases significantly alongside a decrease in the actual usage among the people who got medicaid anyways. The other people who didn't have access to medicaid, and wanted it, were seen to use it more. There was a greater change in medicaid coverage services.
+
+Do we have to worry about attrition bias in analyzing this data? Explain why or why not.
 
 There's only two years of data since the medicaid coverage expanded afterwards to include everyone and that got rid of the control group. Everyone is now offered medicaid coverage due to the crazy demand. 10th of March 2008 to September 30 2009. In the lectures by Amy Finkelstein, she addresses the controversy surrounding medicaid's expansion and the necessities for Randomized Experiment Designs to be implemented into policy making. We should always worry about a little bit of attrition bias just because of unforeseeable attributes like survey fatigue, when people get treatment, leave and don't come back to complete it, since it is such a short time period causes the attrition rate to be lower but it is still there.
